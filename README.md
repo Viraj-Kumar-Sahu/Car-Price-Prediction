@@ -4,7 +4,7 @@
 This project aims to predict the selling price of used cars using various machine learning regression algorithms. By analyzing features such as year of manufacture, distance driven, fuel type, and engine specifications, we identify the key drivers of vehicle valuation.
 
 ## 📊 Dataset
-The project uses the **CarDekho Dataset**, which contains 8,128 entries with 12 initial features:
+The project uses the **CarDekho Dataset** from **Kaggle**, which contains 8,129 entries with 12 initial features:
 - **Numerical:** Year, Selling Price, KM Driven, Mileage, Engine, Max Power, Seats.
 - **Categorical:** Fuel Type, Seller Type, Transmission, Owner.
 
