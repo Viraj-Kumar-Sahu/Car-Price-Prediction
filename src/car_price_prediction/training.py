@@ -226,7 +226,7 @@ def _native_categorical_benchmarks(train_df: pd.DataFrame, holdout_df: pd.DataFr
     try:
         from catboost import CatBoostRegressor
 
-        # CatBoost uses `iterations`/`depth` (see `depth=8` below) instead of sklearn-style `n_estimators`/`max_depth`
+        # CatBoost uses `iterations`/`depth` (see `depth=8` below) instead of scikit-learn-style `n_estimators`/`max_depth`
         cat_model = CatBoostRegressor(iterations=800, learning_rate=0.05, depth=8, random_state=42, verbose=0)
         cat_model.fit(x_train, y_train, cat_features=cat_cols)
         cat_preds = cat_model.predict(x_hold)
@@ -263,6 +263,9 @@ def _native_categorical_benchmarks(train_df: pd.DataFrame, holdout_df: pd.DataFr
 
 
 def _time_aware_eval(best_model: Pipeline, df: pd.DataFrame, target_col: str) -> dict[str, float | int]:
+    if "year" not in df.columns:
+        return {"cutoff_year": -1, "r2": np.nan, "mae": np.nan, "rmse": np.nan}
+
     cutoff = int(df["year"].quantile(0.8))
     train_df = df[df["year"] <= cutoff]
     test_df = df[df["year"] > cutoff]
