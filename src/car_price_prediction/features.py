@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+import os
 from typing import Iterable
 
 import numpy as np
@@ -8,10 +8,11 @@ import pandas as pd
 
 
 TEXT_MISSING = "__missing__"
+DEFAULT_REFERENCE_YEAR = int(os.getenv("CPP_REFERENCE_YEAR", "2025"))
 FEATURE_ENGINEERING_DESCRIPTION = "brand/model extraction + car_age + power_per_cc + km_per_year"
 
 
-def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
+def engineer_features(df: pd.DataFrame, reference_year: int | None = None) -> pd.DataFrame:
     data = df.copy()
 
     data["brand"] = data["name"].astype(str).str.split().str[0].fillna(TEXT_MISSING)
@@ -22,8 +23,8 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     )
     data["max_power"] = pd.to_numeric(data["max_power"], errors="coerce")
 
-    current_year = datetime.now().year
-    data["car_age"] = (current_year - data["year"]).clip(lower=0)
+    year_ref = DEFAULT_REFERENCE_YEAR if reference_year is None else int(reference_year)
+    data["car_age"] = (year_ref - data["year"]).clip(lower=0)
 
     engine = pd.to_numeric(data["engine"], errors="coerce")
     max_power = pd.to_numeric(data["max_power"], errors="coerce")
