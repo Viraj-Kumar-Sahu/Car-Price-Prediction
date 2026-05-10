@@ -8,6 +8,7 @@ import pandas as pd
 
 
 TEXT_MISSING = "__missing__"
+FEATURE_ENGINEERING_DESCRIPTION = "brand/model extraction + car_age + power_per_cc + km_per_year"
 
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:

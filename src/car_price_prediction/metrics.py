@@ -36,19 +36,20 @@ def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, floa
 
 def segment_error_analysis(df: pd.DataFrame) -> pd.DataFrame:
     segment_keys = ["fuel", "transmission", "owner", "price_bucket"]
-    out_frames = []
+    rows: list[dict[str, object]] = []
 
     for key in segment_keys:
-        grouped = (
-            df.groupby(key)
-            .apply(lambda x: pd.Series(regression_metrics(x["actual"].values, x["predicted"].values)))
-            .reset_index()
-        )
-        grouped.insert(0, "segment", key)
-        grouped.rename(columns={key: "segment_value"}, inplace=True)
-        out_frames.append(grouped)
+        for value, group in df.groupby(key, observed=False):
+            metrics = regression_metrics(group["actual"].values, group["predicted"].values)
+            rows.append(
+                {
+                    "segment": key,
+                    "segment_value": value,
+                    **metrics,
+                }
+            )
 
-    return pd.concat(out_frames, ignore_index=True)
+    return pd.DataFrame(rows)
 
 
 def add_price_bucket(df: pd.DataFrame, target_col: str = "actual") -> pd.DataFrame:

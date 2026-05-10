@@ -21,7 +21,12 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVR
 
 from .config import REQUIRED_COLUMNS, TARGET_COLUMN
-from .features import clean_for_native_cat_models, engineer_features, required_prediction_columns
+from .features import (
+    FEATURE_ENGINEERING_DESCRIPTION,
+    clean_for_native_cat_models,
+    engineer_features,
+    required_prediction_columns,
+)
 from .metrics import add_price_bucket, regression_metrics, segment_error_analysis
 
 
@@ -114,7 +119,7 @@ def _cross_validate_models(X_dev: pd.DataFrame, y_dev: pd.Series, preprocessor: 
     rows = []
     for name, model in _base_models().items():
         pipe = _pipeline(model, preprocessor)
-        res = cross_validate(pipe, X_dev, y_dev, cv=cv, scoring=scoring, n_jobs=-1)
+        res = cross_validate(pipe, X_dev, y_dev, cv=cv, scoring=scoring, n_jobs=1)
         rows.append(
             {
                 "model": name,
@@ -314,7 +319,7 @@ def _learning_curve_summary(best_model: Pipeline, X: pd.DataFrame, y: pd.Series)
 
 
 def _permutation_importance_report(best_model: Pipeline, x_hold: pd.DataFrame, y_hold: pd.Series) -> pd.DataFrame:
-    report = permutation_importance(best_model, x_hold, y_hold, n_repeats=15, random_state=42, scoring="r2", n_jobs=-1)
+    report = permutation_importance(best_model, x_hold, y_hold, n_repeats=15, random_state=42, scoring="r2", n_jobs=1)
     pre = best_model.named_steps["preprocess"]
     try:
         feature_names = pre.get_feature_names_out()
@@ -451,7 +456,7 @@ def run_training_pipeline(data_path: Path, output_dir: Path, artifact_path: Path
         "model": best_model,
         "best_model_name": best_model_name,
         "required_columns": required_prediction_columns(x_dev.columns),
-        "feature_engineering": "brand/model extraction + car_age + power_per_cc + km_per_year",
+        "feature_engineering": FEATURE_ENGINEERING_DESCRIPTION,
     }
     joblib.dump(bundle, artifact_path)
 
