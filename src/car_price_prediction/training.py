@@ -113,7 +113,7 @@ def _cross_validate_models(
     preprocessor: ColumnTransformer,
     cv_repeats: int = 3,
 ) -> pd.DataFrame:
-    cv = RepeatedKFold(n_splits=5, n_repeats=max(1, cv_repeats), random_state=42)
+    cv = RepeatedKFold(n_splits=5, n_repeats=cv_repeats, random_state=42)
     scoring = {
         "r2": "r2",
         "mae": "neg_mean_absolute_error",
@@ -226,6 +226,7 @@ def _native_categorical_benchmarks(train_df: pd.DataFrame, holdout_df: pd.DataFr
     try:
         from catboost import CatBoostRegressor
 
+        # CatBoost uses `iterations`/`depth` instead of sklearn-style `n_estimators`/`max_depth`
         cat_model = CatBoostRegressor(iterations=800, learning_rate=0.05, depth=8, random_state=42, verbose=0)
         cat_model.fit(x_train, y_train, cat_features=cat_cols)
         cat_preds = cat_model.predict(x_hold)
@@ -392,7 +393,7 @@ def run_training_pipeline(data_path: Path, output_dir: Path, artifact_path: Path
 
     preprocessor = _build_preprocessor(x_dev)
 
-    cv_repeats = int(os.getenv("CPP_CV_REPEATS", "3"))
+    cv_repeats = max(1, int(os.getenv("CPP_CV_REPEATS", "3")))
     permutation_n_jobs = int(os.getenv("CPP_PERM_N_JOBS", "1"))
 
     cv_summary = _cross_validate_models(x_dev, y_dev, preprocessor, cv_repeats=cv_repeats)

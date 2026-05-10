@@ -9,6 +9,7 @@ import pandas as pd
 
 TEXT_MISSING = "__missing__"
 DEFAULT_REFERENCE_YEAR = int(os.getenv("CPP_REFERENCE_YEAR", "2025"))
+EPSILON = 1e-6
 FEATURE_ENGINEERING_DESCRIPTION = "brand/model extraction + car_age + power_per_cc + km_per_year"
 
 
@@ -30,7 +31,7 @@ def engineer_features(df: pd.DataFrame, reference_year: int | None = None) -> pd
     max_power = pd.to_numeric(data["max_power"], errors="coerce")
     km_driven = pd.to_numeric(data["km_driven"], errors="coerce")
 
-    data["power_per_cc"] = max_power / (engine + 1e-6)
+    data["power_per_cc"] = max_power / (engine + EPSILON)
     data["km_per_year"] = km_driven / (data["car_age"].replace(0, 1))
 
     return data
