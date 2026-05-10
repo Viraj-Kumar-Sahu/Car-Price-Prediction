@@ -13,11 +13,14 @@ from sklearn.metrics import (
 from .features import get_price_buckets
 
 
+EPSILON_SMAPE = 1e-8
+
+
 def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     y_true = np.asarray(y_true)
     y_pred = np.asarray(y_pred)
     denominator = np.abs(y_true) + np.abs(y_pred)
-    denominator = np.where(denominator == 0, 1e-8, denominator)
+    denominator = np.where(denominator == 0, EPSILON_SMAPE, denominator)
     return float(np.mean(2.0 * np.abs(y_pred - y_true) / denominator))
 
 
