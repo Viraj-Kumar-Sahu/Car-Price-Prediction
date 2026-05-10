@@ -73,18 +73,18 @@ pip install -r requirements.txt
 
 ```bash
 PYTHONPATH=src python scripts/train.py \
-  --data-path /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/cardekho.csv \
-  --output-dir /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/outputs \
-  --artifact-path /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/outputs/model.joblib
+  --data-path ./cardekho.csv \
+  --output-dir ./outputs \
+  --artifact-path ./outputs/model.joblib
 ```
 
 3. Run inference
 
 ```bash
 PYTHONPATH=src python scripts/predict.py \
-  --artifact-path /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/outputs/model.joblib \
-  --input-csv /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/cardekho.csv \
-  --output-csv /home/runner/work/Car-Price-Prediction/Car-Price-Prediction/outputs/predictions.csv
+  --artifact-path ./outputs/model.joblib \
+  --input-csv ./cardekho.csv \
+  --output-csv ./outputs/predictions.csv
 ```
 
 ---
