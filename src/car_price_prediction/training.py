@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -106,8 +107,13 @@ def _base_models() -> dict[str, Any]:
     return models
 
 
-def _cross_validate_models(X_dev: pd.DataFrame, y_dev: pd.Series, preprocessor: ColumnTransformer) -> pd.DataFrame:
-    cv = RepeatedKFold(n_splits=5, n_repeats=3, random_state=42)
+def _cross_validate_models(
+    X_dev: pd.DataFrame,
+    y_dev: pd.Series,
+    preprocessor: ColumnTransformer,
+    cv_repeats: int = 3,
+) -> pd.DataFrame:
+    cv = RepeatedKFold(n_splits=5, n_repeats=max(1, cv_repeats), random_state=42)
     scoring = {
         "r2": "r2",
         "mae": "neg_mean_absolute_error",
@@ -318,8 +324,13 @@ def _learning_curve_summary(best_model: Pipeline, X: pd.DataFrame, y: pd.Series)
     )
 
 
-def _permutation_importance_report(best_model: Pipeline, x_hold: pd.DataFrame, y_hold: pd.Series) -> pd.DataFrame:
-    report = permutation_importance(best_model, x_hold, y_hold, n_repeats=15, random_state=42, scoring="r2", n_jobs=1)
+def _permutation_importance_report(
+    best_model: Pipeline,
+    x_hold: pd.DataFrame,
+    y_hold: pd.Series,
+    n_jobs: int = 1,
+) -> pd.DataFrame:
+    report = permutation_importance(best_model, x_hold, y_hold, n_repeats=15, random_state=42, scoring="r2", n_jobs=n_jobs)
     pre = best_model.named_steps["preprocess"]
     try:
         feature_names = pre.get_feature_names_out()
@@ -381,7 +392,10 @@ def run_training_pipeline(data_path: Path, output_dir: Path, artifact_path: Path
 
     preprocessor = _build_preprocessor(x_dev)
 
-    cv_summary = _cross_validate_models(x_dev, y_dev, preprocessor)
+    cv_repeats = int(os.getenv("CPP_CV_REPEATS", "3"))
+    permutation_n_jobs = int(os.getenv("CPP_PERM_N_JOBS", "1"))
+
+    cv_summary = _cross_validate_models(x_dev, y_dev, preprocessor, cv_repeats=cv_repeats)
     cv_summary.to_csv(output_dir / "cv_summary.csv", index=False)
 
     tuned_models = _tune_models(x_dev, y_dev, preprocessor, random_state=random_state)
@@ -445,7 +459,7 @@ def run_training_pipeline(data_path: Path, output_dir: Path, artifact_path: Path
     lc_df = _learning_curve_summary(best_model, x_dev, y_dev)
     lc_df.to_csv(output_dir / "learning_curve_summary.csv", index=False)
 
-    perm_df = _permutation_importance_report(best_model, x_hold, y_hold)
+    perm_df = _permutation_importance_report(best_model, x_hold, y_hold, n_jobs=permutation_n_jobs)
     perm_df.head(30).to_csv(output_dir / "permutation_importance_top30.csv", index=False)
 
     shap_df = _optional_shap_report(best_model, x_hold)

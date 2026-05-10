@@ -39,7 +39,7 @@ def segment_error_analysis(df: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
 
     for key in segment_keys:
-        for value, group in df.groupby(key, observed=False):
+        for value, group in df.groupby(key, observed=True):
             metrics = regression_metrics(group["actual"].values, group["predicted"].values)
             rows.append(
                 {
